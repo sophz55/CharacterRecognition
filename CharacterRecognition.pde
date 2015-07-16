@@ -1,14 +1,17 @@
 //PImage photo;
-float hWeights[][];
-float hidden[];
-float hIns[];
-float oWeights[][];
-float output[];
-float oIns[];
-float input[];
-float expected[];
+float hWeights[][]; // weights indexed by [hidden_node][input]
+float hidden[]; // output of nodes in hidden layer
+float hIns[]; // total input to each hidden node
+float oWeights[][]; // weights indexed by [output_node][hidden_node]
+float output[]; // outputs of nodes in output layer
+float oIns[]; // total input to each output node
+float input[]; //  input to nueral network (input[0] corresponds to special input of 1)
+float expected[]; // expected output
 boolean isTeaching=true;
 float alpha = 1;
+
+// XXX for each hWeights and oWeights, make sure you have a weight for each k in Weights[k][0] that corresponds to special input of 1
+// XXX change inputs to be in range 0 to 1
 
 void setup() {
   PImage photo = loadImage("a.jpg");
@@ -18,24 +21,26 @@ void setup() {
   image(photo, 0, 0);
   photo.loadPixels();
   input = new float[photo.pixels.length + 1];
- // input[0] = 255;
   float[] greyscale = greyscale(photo);
-  for (int i = 0; i < input.length; i++)
-    input[i] = greyscale[i];// - 1];
+  input[0] = 1;
+  for (int i = 1; i < input.length; i++)
+    input[i] = greyscale[i-1];
   photo.updatePixels();
   image(photo, 0, 0);
-  hidden = new float[500];
+  hidden = new float[501];
   hIns = new float[hidden.length];
   hWeights = new float[hidden.length][photo.pixels.length];
   for (float[] els : hWeights)
     for (float el : els)
-      el = 0.5;
-  output = new float[26];
+      el = random(1);
+  for (int i = 0; i < hWeights.length; i++)
+    hWeights[i][0]
+  output = new float[27];
   oIns = new float[output.length];
   oWeights = new float[output.length][hidden.length];
   for (float[] els : oWeights)
     for (float el : els)
-      el = 0.5;
+      el = random(1);
   expected = new float[output.length];
   setExpected();
 }
@@ -46,14 +51,16 @@ void draw() {
   oIns = getIn(hidden, oWeights);
   output = functionG(oIns);
   println(output);
-  if (err() > 20) {
-    if (err() < 30) {
+  println("Error: " + err());
+  if (err() > .01) {
+    if (err() < 3) {
       alpha -= 0.01;
-      for (int j = 0; j < hidden.length; j++)
-        changeWeights(deltaHid(j), hIns, hWeights[j]);
-      for (int k = 0; k < output.length; k++)
-        changeWeights(deltaOut(k), oIns, oWeights[k]);
     }
+    for (int j = 0; j < hidden.length; j++)
+      hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
+    for (int k = 0; k < output.length; k++)
+      oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
+    println("CHANGED");
   }
 }
 
@@ -85,13 +92,13 @@ float gPrime(float in) {
 
 //finds error value for each ouput/neuron value (a-z)
 float err(int k) {
-  return abs(output[k] - expected[k]);
+  return expected[k] - output[k]; //abs(output[k] - expected[k]); // XXX not supposed to be abs
 }
 
 float err() {
   float sum = 0;
   for (int i = 0; i < output.length; i++)
-    sum += err(i);
+    sum += err(i) * err(i);
   return sum;
 }
 
@@ -107,9 +114,11 @@ float deltaHid(int j) {
 }
 
 //changes the weights for 1 neuron
-void changeWeights(float delta, float[] in, float[] weights) {
-  for (int i = 0; i < weights.length; i++)
-    weights[i] += alpha * in[i] * delta;
+float[] changeWeights(float delta, float[] in, float[] weights) {
+  float[] newWeights = new float[weights.length];
+  for (int i = 0; i < in.length; i++)
+    newWeights[i] = weights[i] + alpha * in[i] * delta;
+  return newWeights;
 }
 
 //resizes image for optimal recognition
@@ -118,7 +127,7 @@ void changeSize(PImage img) {
   img.resize(300, 300);
 }
 
-//greyscales the image, returns array of B&W pixels - either 0 or 255
+//greyscales the image, returns array of B&W pixels - either 0 = black or 1 = white
 float[] greyscale(PImage img) {
   float result[] = new float[img.pixels.length];
   float threshold = 40;
@@ -126,7 +135,7 @@ float[] greyscale(PImage img) {
     color col = img.pixels[i];
     if ((red(col)+blue(col)+green(col))/3 > threshold) {
       img.pixels[i] = color(255);
-      result[i] = 255;
+      result[i] = 1;
     } else {
       img.pixels[i] = color(0);
       result[i] = 0;
@@ -139,6 +148,6 @@ float[] greyscale(PImage img) {
 void setExpected() {
   for (float el : expected)
     el = 0;
-  expected[0] = 1;
+  expected[1] = 1;
 }
 
