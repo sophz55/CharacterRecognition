@@ -14,7 +14,7 @@ float alpha = 1;
 // XXX change inputs to be in range 0 to 1
 
 void setup() {
-  PImage photo = loadImage("a.jpg");
+  PImage photo = loadImage("b.jpg");
   image(photo, 0, 0);
   changeSize(photo);
   size(photo.width, photo.height);
@@ -33,14 +33,16 @@ void setup() {
   for (float[] els : hWeights)
     for (float el : els)
       el = random(1);
-  for (int i = 0; i < hWeights.length; i++)
-    hWeights[i][0]
+  for (int i = 0; i < hWeights[0].length; i++)
+    hWeights[0][i] = 0.1;
   output = new float[27];
   oIns = new float[output.length];
   oWeights = new float[output.length][hidden.length];
   for (float[] els : oWeights)
     for (float el : els)
       el = random(1);
+  for (int i = 0; i < oWeights[0].length; i++)
+    oWeights[0][i] = 0.1;
   expected = new float[output.length];
   setExpected();
 }
@@ -53,14 +55,13 @@ void draw() {
   println(output);
   println("Error: " + err());
   if (err() > .01) {
-    if (err() < 3) {
+    if (err() < 2) {
       alpha -= 0.01;
     }
     for (int j = 0; j < hidden.length; j++)
       hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
     for (int k = 0; k < output.length; k++)
       oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
-    println("CHANGED");
   }
 }
 
@@ -148,6 +149,6 @@ float[] greyscale(PImage img) {
 void setExpected() {
   for (float el : expected)
     el = 0;
-  expected[1] = 1;
+  expected[2] = 1;
 }
 
