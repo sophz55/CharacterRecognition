@@ -77,7 +77,7 @@ class ProjectiveTransform {
 
     for (int i = 0; i < 4; i++) {
       int j = (i+1) % scope.length;
-      fill(0);
+      stroke(255,0,0);
       line(scope[i].x, scope[i].y, scope[j].x, scope[j].y);
     }
   }
