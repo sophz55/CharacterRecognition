@@ -9,11 +9,10 @@ class ProjectiveTransform {
   PImage projection; 
 
   Point[] scope; //field of original that is being projected, each array in the 2d array is a vertex of the scope
-  Point p1 = new Point(0, 0, 1);
-  Point p2 = new Point(projWidth, 0, 1); 
-  Point p3 = new Point(projWidth, projHeight, 1);
-  Point p4 = new Point(0, projHeight, 1); 
-
+  Point p1;
+  Point p2;
+  Point p3;
+  Point p4;
 
   int chosen; //index in the scope array of the vertex of the scope that is selected
 
@@ -30,6 +29,10 @@ class ProjectiveTransform {
       new Point(projWidth, projHeight, 1), 
       new Point(0, projHeight, 1)
     };
+    p1 = new Point(0, 0, 1);
+    p2 = new Point(projWidth, 0, 1); 
+    p3 = new Point(projWidth, projHeight, 1);
+    p4 = new Point(0, projHeight, 1); 
     projection = createImage(projWidth, projHeight, RGB);
     updateTransform();
   }
@@ -57,8 +60,11 @@ class ProjectiveTransform {
         if (finalY < 0)
           finalY = original.height - finalY;
         finalY = finalY % original.height;
-
-        projection.pixels[x + y * projection.width] = original.pixels[finalX + finalY * original.width];
+        try {
+          projection.pixels[x + y * projection.width] = original.pixels[finalX + finalY * original.width];
+        } 
+        catch (Exception e) {
+        }
       }
     }
 

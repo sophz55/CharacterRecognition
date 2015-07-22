@@ -1,6 +1,5 @@
 class Learn {
 
-  //PImage photo;
   float hWeights[][]; // weights indexed by [hidden_node][input]
   float hidden[]; // output of nodes in hidden layer
   float hIns[]; // total input to each hidden node
@@ -9,29 +8,18 @@ class Learn {
   float oIns[]; // total input to each output node
   float input[]; //  input to nueral network (input[0] corresponds to special input of 1)
   float expected[]; // expected output
-  boolean isTeaching=true;
   float alpha = 1;
 
-  // XXX for each hWeights and oWeights, make sure you have a weight for each k in Weights[k][0] that corresponds to special input of 1
-  // XXX change inputs to be in range 0 to 1
-
-    Learn( ) {
-    PImage photo = loadImage("b.jpg");
-    image(photo, 0, 0);
-    changeSize(photo);
-    size(photo.width, photo.height);
-    image(photo, 0, 0);
-    photo.loadPixels();
-    input = new float[photo.pixels.length + 1];
-    float[] greyscale = greyscale(photo);
-    input[0] = 1;
-    for (int i = 1; i < input.length; i++)
-      input[i] = greyscale[i-1];
-    photo.updatePixels();
-    image(photo, 0, 0);
+  void Learn(PImage img) {
+    Photo photo = new Photo(img);
+    image(photo.pi, 0, 0);
+    photo.changeSize();
+    size(photo.pi.width, photo.pi.height);
+    image(photo.pi, 0, 0);
+    photo.pi.loadPixels();
     hidden = new float[501];
     hIns = new float[hidden.length];
-    hWeights = new float[hidden.length][photo.pixels.length];
+    hWeights = new float[hidden.length][photo.pi.pixels.length];
     for (float[] els : hWeights)
       for (float el : els)
         el = random(1);
@@ -49,14 +37,14 @@ class Learn {
     setExpected();
   }
 
-  void draw() {
-    hIns = getIn(input, hWeights);
-    hidden = functionG(hIns);
-    oIns = getIn(hidden, oWeights);
-    output = functionG(oIns);
-//    println(output);
-//    println("Error: " + err());
-    if (err() > .01) {
+  void stuff() {
+    while (err () > 0.01) {
+      hIns = getIn(input, hWeights);
+      hidden = functionG(hIns);
+      oIns = getIn(hidden, oWeights);
+      output = functionG(oIns);
+      println(output);
+      println("Error: " + err());
       if (err() < 2) {
         alpha -= 0.01;
       }
@@ -122,29 +110,6 @@ class Learn {
     for (int i = 0; i < in.length; i++)
       newWeights[i] = weights[i] + alpha * in[i] * delta;
     return newWeights;
-  }
-
-  //resizes image for optimal recognition
-  void changeSize(PImage img) {
-    //img.resize(img.width/4, img.height/4);
-    img.resize(300, 300);
-  }
-
-  //greyscales the image, returns array of B&W pixels - either 0 = black or 1 = white
-  float[] greyscale(PImage img) {
-    float result[] = new float[img.pixels.length];
-    float threshold = 40;
-    for (int i = 0; i < img.pixels.length; i++) {
-      color col = img.pixels[i];
-      if ((red(col)+blue(col)+green(col))/3 > threshold) {
-        img.pixels[i] = color(255);
-        result[i] = 1;
-      } else {
-        img.pixels[i] = color(0);
-        result[i] = 0;
-      }
-    }
-    return result;
   }
 
   //set expected result for each input picture (e.g. "a" will have expected [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]

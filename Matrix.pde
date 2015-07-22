@@ -56,15 +56,15 @@ class Matrix {
   float determinant() {
     /*
     float sum = 0;
-    int c1, c2, c3;
-    for (int col = 0; col < numCols; col++) {
-      c1 = col;
-      c2 = (col+1) % numCols;
-      c3 = (c2+1) % numCols;
-      sum += matrix[0][c1]*matrix[1][c2]*matrix[2][c3];
-      sum -= matrix[2][c1]*matrix[1][c2]*matrix[0][c3];
-    }
-    return sum;*/
+     int c1, c2, c3;
+     for (int col = 0; col < numCols; col++) {
+     c1 = col;
+     c2 = (col+1) % numCols;
+     c3 = (c2+1) % numCols;
+     sum += matrix[0][c1]*matrix[1][c2]*matrix[2][c3];
+     sum -= matrix[2][c1]*matrix[1][c2]*matrix[0][c3];
+     }
+     return sum;*/
     return dotProduct(cofactor().matrix[0], matrix[0]);
   }
 
