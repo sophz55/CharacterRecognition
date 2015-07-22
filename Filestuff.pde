@@ -1,3 +1,22 @@
+class Filestuff{
+
+float[][] rand1;
+float[][] rand2;
+
+JSONArray ar1;
+JSONArray ar2;
+
+JSONArray valuesh; //to put into the file
+JSONArray valueso; // to put into the file
+JSONArray inh; //coming from the file
+JSONArray ino; //coming from the file
+
+String w = "weight";
+
+float[][] hWeightss;//weights read in by file indexed by [hidden][input]
+float[][] oWeightss; //weights read in by file indexed by [output][hidden]
+
+
 //PImage photo;
 float hWeights[][]; // weights indexed by [hidden_node][input]
 float hidden[]; // output of nodes in hidden layer
@@ -10,12 +29,30 @@ float expected[]; // expected output
 boolean isTeaching=true;
 float alpha = 1;
 
-ProjectiveTransform p;
-
 // XXX for each hWeights and oWeights, make sure you have a weight for each k in Weights[k][0] that corresponds to special input of 1
 // XXX change inputs to be in range 0 to 1
 
-void setup() {
+void Filestuff() {
+
+
+  /*rand();
+  ar1 = new JSONArray();
+  ar2 = new JSONArray();
+  for(int i = 0; i < 500; i++){
+    for(int j = 0; j < 900; j++){
+      JSONObject ob1 = new JSONObject();
+      ob1.setFloat(w, rand1[i][j]);
+      ar1.setJSONObject(j*4 + i, ob1);
+    }
+    for(int k = 0; k < 27; k++){
+      JSONObject ob2 = new JSONObject();
+      ob2.setFloat(w, rand2[k][i]);
+      ar2.setJSONObject(i*4 + k, ob2);
+    }
+  }
+  saveJSONArray(ar1, "data/weighth.json");
+  saveJSONArray(ar2, "data/weighto.json");
+  */
   PImage photo = loadImage("b.jpg");
   image(photo, 0, 0);
   changeSize(photo);
@@ -32,85 +69,39 @@ void setup() {
   hidden = new float[501];
   hIns = new float[hidden.length];
   hWeights = new float[hidden.length][photo.pixels.length];
+
   for (float[] els : hWeights)
     for (float el : els)
       el = random(1);
-  for (int i = 0; i < hWeights[0].length; i++)
-    hWeights[0][i] = random(1);
+
   output = new float[27];
   oIns = new float[output.length];
   oWeights = new float[output.length][hidden.length];
+
   for (float[] els : oWeights)
     for (float el : els)
       el = random(1);
+
+  readfile();
+
+  for (int i = 0; i < hWeights[0].length; i++)
+    hWeights[0][i] = 0.1;
+
   for (int i = 0; i < oWeights[0].length; i++)
-    oWeights[0][i] = random(1);
+    oWeights[0][i] = 0.1;
+
   expected = new float[output.length];
   setExpected();
-  p = new ProjectiveTransform(photo);
-  //  float[][] testMatrix1 = new float[][] {
-  //    {
-  //      2, -1, 0
-  //    }
-  //    , 
-  //    {
-  //      3, -5, 2
-  //    }
-  //    , 
-  //    {
-  //      1, 4, -2
-  //    }
-  //  };
-  //  Matrix TM1 = new Matrix(testMatrix1);
-  //  float[][] identity = new float[][] {
-  //    {
-  //      3, -2, 5
-  //    }
-  //    , 
-  //    {
-  //      0, -1, 6
-  //    }
-  //    , 
-  //    {
-  //      -4, 2, -1
-  //    }
-  //  };
-  //  Matrix TM2 = new Matrix(identity);
-  //
-  //  Matrix TM4 = TM1.inverse();
-  //
-  //  Matrix result = TM1.multMatrix(TM4);
-  //  for (int i = 0; i < 3; i++) {
-  //    println(Arrays.toString(result.matrix[i]));
-  //  }
-
-  Matrix TM2 = p.qMatrix(new Point(1, 2, 1), new Point(3, 4, 1), new Point(5, 7, 1), new Point(36, 78, 1));
-  Matrix TM3 = new Matrix(new float[][] {
-    {
-      1, 0, 1
-    }
-    , {
-      0, 1, 1
-    }
-    , {
-      0, 0, 1
-    }
-  }
-  );
-  Matrix asdf = TM2.multMatrix(TM3);
-  float[][] result = asdf.matrix;
-  println("" + result[0][0] / result[2][0] + " " + result[1][0] / result[2][0]);
-  println("" + result[0][1] / result[2][1] + " " + result[1][1] / result[2][1]);
-  println("" + result[0][2] / result[2][2] + " " + result[1][2] / result[2][2]);
 }
 
-void draw() {
+void doStuff() {
+
   hIns = getIn(input, hWeights);
   hidden = functionG(hIns);
   oIns = getIn(hidden, oWeights);
   output = functionG(oIns);
-  //  println(output);
-  //  println("Error: " + err());
+  println(output);
+  println("Error: " + err());
   if (err() > .01) {
     if (err() < 2) {
       alpha -= 0.01;
@@ -120,62 +111,27 @@ void draw() {
     for (int k = 0; k < output.length; k++)
       oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
   }
-
-  p.display();
-}
-
-
-//find point closest to mouse when mouse is pressed
-void mousePressed() {
-  float minDist = -1;
-  int closest = -1;
-  float d;
-  for (int i = 0; i < p.scope.length; i++) {
-    d = dist(p.scope[i].x, p.scope[i].y, mouseX, mouseY);
-    if (d < minDist || closest == -1) {
-      minDist = d;
-      closest = i;
-    }
+  else{
+    writefile();
   }
-  p.chosen = closest;
 }
-
-//move chosen vertex of scope to mouse coordinates
-void mouseDragged() {
-  int mx = mouseX;
-  if (mx < 0)
-    mx = 0;
-  if (mx >= p.original.width)
-    mx = p.original.width;
-  p.scope[p.chosen].x = mx;
-  int my = mouseY;
-  if (my < 0)
-    my = 0;
-  if (my >= p.original.height)
-    my = p.original.height;
-  p.scope[p.chosen].y = my;
-  p.updateTransform();
-}
-
 
 //takes array of inputs and 2d array of weights, returns array of weighted sums
 float[] getIn(float[] in, float[][] weights) {
-  float sums[] = new float[weights.length]; 
+  float sums[] = new float[weights.length];
   float sum=0;
   for (int j = 0; j < weights.length; j++) {
     for (int i = 0; i < weights[0].length; i++)
-      sum += weights[j][i]*in[i]; 
-    sums[j] = sum; 
+      sum += weights[j][i]*in[i];
+    sums[j] = sum;
     sum = 0;
   }
   return sums;
 }
 
-
-
 //takes array of weighted sums (inputs), puts it through function G
 float[] functionG(float ins[]) {
-  float out[] = new float[ins.length]; 
+  float out[] = new float[ins.length];
   for (int i = 0; i < out.length; i++)
     out[i] = 1/(1+exp(-1*ins[i]));
   return out;
@@ -247,3 +203,59 @@ void setExpected() {
   expected[2] = 1;
 }
 
+void writefile(){ //puts weights into the file weights.json
+  valuesh = new JSONArray();
+  valueso = new JSONArray();
+
+  for(int i = 0; i < 500; i ++){
+
+    JSONObject jobh = new JSONObject();
+    JSONObject jobo = new JSONObject();
+
+    for(int j = 0; j < 27; j++){
+      jobo.setFloat(w, oWeights[j][i]);
+      valueso.setJSONObject(i, jobo);
+    }
+    for(int k = 0; k < 900; k++){
+      jobh.setFloat(w, hWeights[i][k]);
+      valuesh.setJSONObject(i, jobh);
+    }
+  }
+  saveJSONArray(valuesh, "data/weighth.json");
+  saveJSONArray(valueso, "data/weighto.json");
+}
+
+void readfile(){//puts the weights from file weights.json into hweightss and oweightss
+  inh = loadJSONArray("data/weighth.json");
+  ino = loadJSONArray("data/weighto.json");
+  if(inh != null && ino != null){
+    hWeightss = new float[500][900];//hi
+    oWeightss = new float[27][500];//oh
+    int ch = 0;
+    int co = 0;
+    for(int i = 0; i < 500; i++){
+      for(int k = 0; k < 900; k++){
+        hWeightss[i][k] = inh.getJSONObject(ch).getFloat(w);
+        ch++;
+      }
+      for(int j = 0; j < 27; j++){
+        oWeightss[j][i] = ino.getJSONObject(co).getFloat(w);
+        co++;
+      }
+    }
+  }
+}
+
+void rand(){
+  rand1 = new float[500][900];
+  rand2 = new float[27][500];
+  for(int i = 0; i < 500; i++){
+    for(int j = 0; j < 900; j++){
+      rand1[i][j] = random(1);
+    }
+    for(int k = 0; k < 27; k++){
+      rand2[k][i] = random(1);
+    }
+  }
+}
+}
