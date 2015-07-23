@@ -1,7 +1,4 @@
-class Filestuff {
-
-  float[][] rand1;
-  float[][] rand2;
+/*class Filestuff {
 
   JSONArray ar1;
   JSONArray ar2;
@@ -29,12 +26,8 @@ class Filestuff {
   boolean isTeaching=true;
   float alpha = 1;
 
-  // XXX for each hWeights and oWeights, make sure you have a weight for each k in Weights[k][0] that corresponds to special input of 1
-  // XXX change inputs to be in range 0 to 1
+  void Filestuff() {
 
-    void Filestuff() {
- 
-    /*rand();
      ar1 = new JSONArray();
      ar2 = new JSONArray();
      for(int i = 0; i < 500; i++){
@@ -51,7 +44,7 @@ class Filestuff {
      }
      saveJSONArray(ar1, "data/weighth.json");
      saveJSONArray(ar2, "data/weighto.json");
-     */
+     
     PImage photo = loadImage("b.jpg");
     image(photo, 0, 0);
     changeSize(photo);
@@ -109,7 +102,6 @@ class Filestuff {
         hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       for (int k = 0; k < output.length; k++)
         oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
-    } else {
       writefile();
     }
   }
@@ -171,36 +163,6 @@ class Filestuff {
     return newWeights;
   }
 
-  //resizes image for optimal recognition
-  void changeSize(PImage img) {
-    //img.resize(img.width/4, img.height/4);
-    img.resize(300, 300);
-  }
-
-  //greyscales the image, returns array of B&W pixels - either 0 = black or 1 = white
-  float[] greyscale(PImage img) {
-    float result[] = new float[img.pixels.length];
-    float threshold = 40;
-    for (int i = 0; i < img.pixels.length; i++) {
-      color col = img.pixels[i];
-      if ((red(col)+blue(col)+green(col))/3 > threshold) {
-        img.pixels[i] = color(255);
-        result[i] = 1;
-      } else {
-        img.pixels[i] = color(0);
-        result[i] = 0;
-      }
-    }
-    return result;
-  }
-
-  //set expected result for each input picture (e.g. "a" will have expected [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-  void setExpected() {
-    for (float el : expected)
-      el = 0;
-    expected[2] = 1;
-  }
-
   void writefile() { //puts weights into the file weights.json
     valuesh = new JSONArray();
     valueso = new JSONArray();
@@ -243,18 +205,5 @@ class Filestuff {
       }
     }
   }
-
-  void rand() {
-    rand1 = new float[500][900];
-    rand2 = new float[27][500];
-    for (int i = 0; i < 500; i++) {
-      for (int j = 0; j < 900; j++) {
-        rand1[i][j] = random(1);
-      }
-      for (int k = 0; k < 27; k++) {
-        rand2[k][i] = random(1);
-      }
-    }
-  }
-}
+}*/
 

@@ -11,7 +11,7 @@ class Photo {
   }
 
   //greyscales the image, returns array of B&W pixels - either 0 = black or 1 = white
-  void greyscale() {
+  float[] greyscale() {
     float result[] = new float[pi.pixels.length];
     float threshold = 180;
     for (int i = 0; i < pi.pixels.length; i++) {
@@ -25,7 +25,7 @@ class Photo {
       }
     }
     pi.updatePixels();
-   // return result;
+    return result;
   }
 
   //resizes image for optimal recognition

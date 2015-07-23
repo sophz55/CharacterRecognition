@@ -1,5 +1,18 @@
 class Learn {
 
+  //Roz
+  float[][] rand1;
+  float[][] rand2;
+  JSONArray ar1;
+  JSONArray ar2;
+  JSONArray valuesh; //to put into the file
+  JSONArray valueso; // to put into the file
+  JSONArray inh; //coming from the file
+  JSONArray ino; //coming from the file
+  String w = "weight";
+  float[][] hWeightss;//weights read in by file indexed by [hidden][input]
+  float[][] oWeightss; //weights read in by file indexed by [output][hidden]
+
   float hWeights[][]; // weights indexed by [hidden_node][input]
   float hidden[]; // output of nodes in hidden layer
   float hIns[]; // total input to each hidden node
@@ -17,24 +30,49 @@ class Learn {
     size(photo.pi.width, photo.pi.height);
     image(photo.pi, 0, 0);
     photo.pi.loadPixels();
+    float[] temp = photo.greyscale();
+    input = new float[temp.length+1];
+    input[0] = 1;
+    for (int i = 0; i< temp.length; i++)
+      input[i+1] = temp[i];
     hidden = new float[501];
     hIns = new float[hidden.length];
-    hWeights = new float[hidden.length][photo.pi.pixels.length];
-    for (float[] els : hWeights)
-      for (float el : els)
-        el = random(1);
-    for (int i = 0; i < hWeights[0].length; i++)
-      hWeights[0][i] = random(1);
+    hWeights = new float[hidden.length][input.length];
+    /*for (float[] els : hWeights)
+     for (float el : els)
+     el = random(1);
+     for (int i = 0; i < hWeights[0].length; i++)
+     hWeights[0][i] = random(1);*/
     output = new float[27];
     oIns = new float[output.length];
     oWeights = new float[output.length][hidden.length];
-    for (float[] els : oWeights)
-      for (float el : els)
-        el = random(1);
-    for (int i = 0; i < oWeights[0].length; i++)
-      oWeights[0][i] = random(1);
+    /*for (float[] els : oWeights)
+     for (float el : els)
+     el = random(1);
+     for (int i = 0; i < oWeights[0].length; i++)
+     oWeights[0][i] = random(1);*/
+
     expected = new float[output.length];
     setExpected();
+
+
+    //roz
+    ar1 = new JSONArray();
+    ar2 = new JSONArray();
+    /*  for (int i = 0; i < hidden.length; i++) {
+     for (int j = 0; j < input.length; j++) {
+     JSONObject ob1 = new JSONObject();
+     ob1.setFloat(w, rand1[i][j]);
+     ar1.setJSONObject(j*4 + i, ob1);
+     }
+     for (int k = 0; k < 27; k++) {
+     JSONObject ob2 = new JSONObject();
+     ob2.setFloat(w, rand2[k][i]);
+     ar2.setJSONObject(i*4 + k, ob2);
+     }
+     }*/
+    //saveJSONArray(ar1, "data/weighth.json");
+    //saveJSONArray(ar2, "data/weighto.json");
   }
 
   void stuff() {
@@ -45,13 +83,14 @@ class Learn {
       output = functionG(oIns);
       println(output);
       println("Error: " + err());
-      if (err() < 2) {
+      if (err() < 1) {
         alpha -= 0.01;
       }
       for (int j = 0; j < hidden.length; j++)
         hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       for (int k = 0; k < output.length; k++)
         oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
+      writefile();
     }
   }
 
@@ -117,6 +156,49 @@ class Learn {
     for (float el : expected)
       el = 0;
     expected[2] = 1;
+  }
+
+  void writefile() { //puts weights into the file weights.json
+    valuesh = new JSONArray();
+    valueso = new JSONArray();
+
+    for (int i = 0; i < 500; i ++) {
+
+      JSONObject jobh = new JSONObject();
+      JSONObject jobo = new JSONObject();
+
+      for (int j = 0; j < 27; j++) {
+        jobo.setFloat(w, oWeights[j][i]);
+        valueso.setJSONObject(i, jobo);
+      }
+      for (int k = 0; k < 900; k++) {
+        jobh.setFloat(w, hWeights[i][k]);
+        valuesh.setJSONObject(i, jobh);
+      }
+    }
+    saveJSONArray(valuesh, "data/weighth.json");
+    saveJSONArray(valueso, "data/weighto.json");
+  }
+
+  void readfile() {//puts the weights from file weights.json into hweightss and oweightss
+    inh = loadJSONArray("data/weighth.json");
+    ino = loadJSONArray("data/weighto.json");
+    if (inh != null && ino != null) {
+      hWeightss = new float[500][900];//hi
+      oWeightss = new float[27][500];//oh
+      int ch = 0;
+      int co = 0;
+      for (int i = 0; i < 500; i++) {
+        for (int k = 0; k < 900; k++) {
+          hWeightss[i][k] = inh.getJSONObject(ch).getFloat(w);
+          ch++;
+        }
+        for (int j = 0; j < 27; j++) {
+          oWeightss[j][i] = ino.getJSONObject(co).getFloat(w);
+          co++;
+        }
+      }
+    }
   }
 }
 

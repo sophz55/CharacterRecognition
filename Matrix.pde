@@ -54,57 +54,46 @@ class Matrix {
   }
 
   float determinant() {
-    /*
-    float sum = 0;
-     int c1, c2, c3;
-     for (int col = 0; col < numCols; col++) {
-     c1 = col;
-     c2 = (col+1) % numCols;
-     c3 = (c2+1) % numCols;
-     sum += matrix[0][c1]*matrix[1][c2]*matrix[2][c3];
-     sum -= matrix[2][c1]*matrix[1][c2]*matrix[0][c3];
-     }
-     return sum;*/
     return dotProduct(cofactor().matrix[0], matrix[0]);
   }
 
   Matrix cofactor() {
 
-    float[][] blah = new float[][] {
-      {
-        matrix[1][1] * matrix[2][2] - matrix[2][1]* matrix[1][2], 
-        (matrix[1][0] * matrix[2][2] - matrix[1][2]* matrix[2][0])*(-1), 
-        matrix[1][0] * matrix[2][1] - matrix[2][0]* matrix[1][1]
-      }
-      , 
-      {
-        (matrix[0][1] * matrix[2][2] - matrix[2][1]* matrix[0][2])*(-1), 
-        (matrix[0][2] * matrix[2][0] - matrix[0][0]* matrix[2][2])*(-1), 
-        (matrix[0][1] * matrix[2][0] - matrix[2][1]* matrix[0][0])
-        }
-        , 
-      {
-        matrix[0][1] * matrix[1][2] - matrix[1][1]* matrix[0][2], 
-        matrix[1][0] * matrix[0][2] - matrix[0][0]* matrix[1][2], 
-        matrix[1][1] * matrix[0][0] - matrix[0][1]* matrix[1][0]
-      }
-    };
-    Matrix result = new Matrix(blah);
-
-
-    /*int a, b, c, d;
-     for (int row = 0; row < 3; row++) {
-     a = (row+1) % numRows;
-     b = (a+1) % numRows;
-     for (int col = 0; col < 3; col++) {
-     c = (col+1) % numCols;
-     d = (c+1) % numCols;
-     result.matrix[row][col] = (matrix[a][c]*matrix[b][d] - matrix[b][c]*matrix[a][d]);
+    /* float[][] blah = new float[][] {
+     {
+     matrix[1][1] * matrix[2][2] - matrix[2][1]* matrix[1][2], 
+     (matrix[1][0] * matrix[2][2] - matrix[1][2]* matrix[2][0])*(-1), 
+     matrix[1][0] * matrix[2][1] - matrix[2][0]* matrix[1][1]
      }
-     }*/
+     , 
+     {
+     (matrix[0][1] * matrix[2][2] - matrix[2][1]* matrix[0][2])*(-1), 
+     (matrix[0][2] * matrix[2][0] - matrix[0][0]* matrix[2][2])*(-1), 
+     (matrix[0][1] * matrix[2][0] - matrix[2][1]* matrix[0][0])
+     }
+     , 
+     {
+     matrix[0][1] * matrix[1][2] - matrix[1][1]* matrix[0][2], 
+     matrix[1][0] * matrix[0][2] - matrix[0][0]* matrix[1][2], 
+     matrix[1][1] * matrix[0][0] - matrix[0][1]* matrix[1][0]
+     }
+     };
+     Matrix result = new Matrix(blah);*/
+
+    Matrix result = new Matrix();
+    int a, b, c, d;
+    for (int row = 0; row < 3; row++) {
+      a = (row+1) % numRows;
+      b = (a+1) % numRows;
+      for (int col = 0; col < 3; col++) {
+        c = (col+1) % numCols;
+        d = (c+1) % numCols;
+        result.matrix[row][col] = (matrix[a][c]*matrix[b][d] - matrix[b][c]*matrix[a][d]);
+      }
+    }
     return result;
   }
-
+s
   Matrix transpose() {
     Matrix m = new Matrix();
     for (int i = 0; i < numRows; i++)

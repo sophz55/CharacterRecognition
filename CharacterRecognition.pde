@@ -20,6 +20,10 @@ void draw() {
     photo.greyscale();
     image(photo.pi, 0, 0); 
   }
+  if (isTeaching){
+      
+  }
+    
 }
 
 //find point closest to mouse when mouse is pressed
