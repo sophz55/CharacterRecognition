@@ -13,7 +13,7 @@ class Photo {
   //greyscales the image, returns array of B&W pixels - either 0 = black or 1 = white
   void greyscale() {
     float result[] = new float[pi.pixels.length];
-    float threshold = 165;
+    float threshold = 180;
     for (int i = 0; i < pi.pixels.length; i++) {
       color col = pi.pixels[i];
       if ((red(col)+blue(col)+green(col))/3 >= threshold) {

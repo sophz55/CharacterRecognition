@@ -33,8 +33,7 @@ class Filestuff {
   // XXX change inputs to be in range 0 to 1
 
     void Filestuff() {
-
-
+ 
     /*rand();
      ar1 = new JSONArray();
      ar2 = new JSONArray();

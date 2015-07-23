@@ -18,7 +18,7 @@ void draw() {
     frame.setSize(p.projection.width, p.projection.height);
     photo.pi = p.projection;
     photo.greyscale();
-    image(photo.pi, 0, 0);
+    image(photo.pi, 0, 0); 
   }
 }
 
