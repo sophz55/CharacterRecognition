@@ -24,7 +24,7 @@ void draw() {
     image(photo.pi, 0, 0); 
   }
   if (isTeaching){
-      
+   l1 = new Learn(   
   }
     
 }
