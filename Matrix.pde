@@ -93,7 +93,7 @@ class Matrix {
     }
     return result;
   }
-s
+
   Matrix transpose() {
     Matrix m = new Matrix();
     for (int i = 0; i < numRows; i++)

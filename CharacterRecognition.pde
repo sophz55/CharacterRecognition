@@ -1,11 +1,14 @@
 Photo photo;
-boolean isTeaching = true;
+boolean isTeaching = false; //true;
 boolean isCropping = true;
+
+Learn l1;
 
 ProjectiveTransform p;
 
 void setup() {
-  PImage pic = loadImage("Test.jpg");
+  
+  PImage pic = loadImage("b.jpg");//"Test.jpg");
   photo = new Photo(pic);
   photo.changeSize();
   p = new ProjectiveTransform(photo.getPI());
