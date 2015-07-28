@@ -49,35 +49,40 @@ class Learn {
 
     //expected
     expected = new float[output.length];
-    setExpected(2);
+    setExpected(1);
 
     //set initial weights
-    readFile();
-    for (int i = 0; i < hWeights[0].length; i++)
-      hWeights[0][i] = 0.5;
+    //readFile();
+    /*for (float[] els : hWeights)
+      for (float el : els)
+        el = random(1);
+    for (float[] els : oWeights)
+      for (float el : els)
+        el = random(1);*/
+
+    for (int i = 0; i < hWeights[0].length; i++) 
+      hWeights[0][i] = 0.1;
     for (int i = 0; i < oWeights[0].length; i++)
-      oWeights[0][i] = 0.5;
+      oWeights[0][i] = 0.1;
   }
 
   //calls everything and writes into the text files
   void stuff() {
-    while (err () > 0.01) {
+    while (err() > .01) {
       hIns = getIn(input, hWeights);
       hidden = functionG(hIns);
       oIns = getIn(hidden, oWeights);
       output = functionG(oIns);
       println(output);
       println("Error: " + err());
-      //println("alpha: " + alpha);
-      if (err() < 5) {
-        if (alpha > 0.5)
+      println("alpha: " + alpha);
+      if (err() < 3) {
           alpha -= 0.01;
       }
       for (int j = 0; j < hidden.length; j++)
         hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       for (int k = 0; k < output.length; k++)
         oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
-      // println(pls);
     }
     writeFile();
   }

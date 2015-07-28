@@ -11,7 +11,7 @@ ProjectiveTransform p;
 
 void setup() {
 
-  PImage pic = loadImage("b.jpg");//"Test.jpg");
+  PImage pic = loadImage("a.jpg");//"Test.jpg");
   photo = new Photo(pic);
   photo.changeSize();
   p = new ProjectiveTransform(photo.getPI());
