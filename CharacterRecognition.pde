@@ -2,8 +2,8 @@ import java.io.*;
 import java.util.*;
 
 Photo photo;
-boolean isTeaching = true;
 boolean isCropping = true;
+boolean isTeaching = true;
 
 Learn l1;
 
@@ -11,7 +11,7 @@ ProjectiveTransform p;
 
 void setup() {
 
-  PImage pic = loadImage("a.jpg");//"Test.jpg");
+  PImage pic = loadImage("b.jpg");//"Test.jpg");
   photo = new Photo(pic);
   photo.changeSize();
   p = new ProjectiveTransform(photo.getPI());

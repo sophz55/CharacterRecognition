@@ -19,8 +19,9 @@ class Learn {
   float input[]; //  input to nueral network (input[0] corresponds to special input of 1)
   float expected[]; // expected output
   float alpha = 1;
-
+  int expect = 1;
   Photo photo;
+  
 
   Learn(PImage img) {
     photo = new Photo(img);
@@ -49,16 +50,16 @@ class Learn {
 
     //expected
     expected = new float[output.length];
-    setExpected(1);
+    setExpected(expect);
 
     //set initial weights
     //readFile();
     /*for (float[] els : hWeights)
-      for (float el : els)
-        el = random(1);
-    for (float[] els : oWeights)
-      for (float el : els)
-        el = random(1);*/
+     for (float el : els)
+     el = random(1);
+     for (float[] els : oWeights)
+     for (float el : els)
+     el = random(1);*/
 
     for (int i = 0; i < hWeights[0].length; i++) 
       hWeights[0][i] = 0.1;
@@ -68,7 +69,7 @@ class Learn {
 
   //calls everything and writes into the text files
   void stuff() {
-    while (err() > .01) {
+    while (err () > .01 && isTeaching) {
       hIns = getIn(input, hWeights);
       hidden = functionG(hIns);
       oIns = getIn(hidden, oWeights);
@@ -76,8 +77,8 @@ class Learn {
       println(output);
       println("Error: " + err());
       println("alpha: " + alpha);
-      if (err() < 1) {
-          alpha -= 0.01;
+      if (err() < 2) {
+        alpha -= 0.01;
       }
       for (int j = 0; j < hidden.length; j++)
         hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
@@ -151,7 +152,7 @@ class Learn {
   void setExpected(int i) {
     for (float el : expected)
       el = 0;
-    expected[i] = 1;
+    expected[i+1] = 1;
   }
 
   //reads in and sets weights for hidden and output layers from text files
@@ -189,24 +190,32 @@ class Learn {
   void writeFile() {
     PrintWriter pw = null;
     PrintWriter pw2 = null;
-    try {
-      pw = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/hWeights.txt"));
-      pw2 = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/oWeights.txt"));
-    } 
-    catch (Exception e) { 
-      e.printStackTrace();
-    }
-    for (int i = 0; i < hWeights.length; i++) {
-      for (int j = 0; j < hWeights[0].length; j++) {
-        pw.println(hWeights[i][j]);
+    if (isTeaching) {
+      try {
+        pw = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/hWeights.txt"));
+        pw2 = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/oWeights.txt"));
+      } 
+      catch (Exception e) { 
+        e.printStackTrace();
+      }
+      for (int i = 0; i < hWeights.length; i++) {
+        for (int j = 0; j < hWeights[0].length; j++) {
+          pw.println(hWeights[i][j]);
+        }
+      }
+      for (int i = 0; i < oWeights.length; i++) {
+        for (int j = 0; j < oWeights[0].length; j++) {
+          pw2.println(oWeights[i][j]);
+        }
+      }
+    } else {
+      try {
+        pw = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/results.txt"));
+      } 
+      catch (Exception e) { 
+        e.printStackTrace();
       }
     }
-    for (int i = 0; i < oWeights.length; i++) {
-      for (int j = 0; j < oWeights[0].length; j++) {
-        pw2.println(oWeights[i][j]);
-      }
-    }
-
     pw.close();
     pw2.close();
     exit();
