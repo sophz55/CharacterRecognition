@@ -76,7 +76,7 @@ class Learn {
       println(output);
       println("Error: " + err());
       println("alpha: " + alpha);
-      if (err() < 3) {
+      if (err() < 1) {
           alpha -= 0.01;
       }
       for (int j = 0; j < hidden.length; j++)
