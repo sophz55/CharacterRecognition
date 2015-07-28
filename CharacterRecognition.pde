@@ -1,5 +1,8 @@
+import java.io.*;
+import java.util.*;
+
 Photo photo;
-boolean isTeaching = false; //true;
+boolean isTeaching = true;
 boolean isCropping = true;
 
 Learn l1;
@@ -7,7 +10,7 @@ Learn l1;
 ProjectiveTransform p;
 
 void setup() {
-  
+
   PImage pic = loadImage("b.jpg");//"Test.jpg");
   photo = new Photo(pic);
   photo.changeSize();
@@ -21,12 +24,12 @@ void draw() {
     frame.setSize(p.projection.width, p.projection.height);
     photo.pi = p.projection;
     photo.greyscale();
-    image(photo.pi, 0, 0); 
+    image(photo.pi, 0, 0);
+    if (isTeaching) {
+      l1 = new Learn(photo.pi);
+      l1.stuff();
+    }
   }
-  if (isTeaching){
-   l1 = new Learn(   
-  }
-    
 }
 
 //find point closest to mouse when mouse is pressed

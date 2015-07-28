@@ -31,7 +31,7 @@ class Photo {
   //resizes image for optimal recognition
   void changeSize() {
     //img.resize(img.width/4, img.height/4);
-    pi.resize(640, 480);
+    pi.resize(30, 30);
   }
 }
 

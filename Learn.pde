@@ -1,17 +1,14 @@
 class Learn {
 
   //Roz
-  float[][] rand1;
-  float[][] rand2;
-  JSONArray ar1;
-  JSONArray ar2;
-  JSONArray valuesh; //to put into the file
-  JSONArray valueso; // to put into the file
-  JSONArray inh; //coming from the file
-  JSONArray ino; //coming from the file
-  String w = "weight";
-  float[][] hWeightss;//weights read in by file indexed by [hidden][input]
-  float[][] oWeightss; //weights read in by file indexed by [output][hidden]
+  /*JSONArray valuesh; //to put into the file
+   JSONArray valueso; // to put into the file
+   JSONArray ino; //coming from the file
+   JSONArray inh; //coming from the file
+   String w = "weight";
+   float[][] hWeightss;//weights read in by file indexed by [hidden][input]
+   float[][] oWeightss; //weights read in by file indexed by [output][hidden]*/
+  //boolean pls = false;
 
   float hWeights[][]; // weights indexed by [hidden_node][input]
   float hidden[]; // output of nodes in hidden layer
@@ -23,58 +20,46 @@ class Learn {
   float expected[]; // expected output
   float alpha = 1;
 
-  void Learn(PImage img) {
-    Photo photo = new Photo(img);
+  Photo photo;
+
+  Learn(PImage img) {
+    photo = new Photo(img);
     image(photo.pi, 0, 0);
     photo.changeSize();
     size(photo.pi.width, photo.pi.height);
     image(photo.pi, 0, 0);
+
+    //make input from pixels of given PImage
     photo.pi.loadPixels();
     float[] temp = photo.greyscale();
     input = new float[temp.length+1];
-    input[0] = 1;
+    input[0] = 1; //dummy
     for (int i = 0; i< temp.length; i++)
       input[i+1] = temp[i];
+
+    //hidden stuff
     hidden = new float[501];
     hIns = new float[hidden.length];
     hWeights = new float[hidden.length][input.length];
-    /*for (float[] els : hWeights)
-     for (float el : els)
-     el = random(1);
-     for (int i = 0; i < hWeights[0].length; i++)
-     hWeights[0][i] = random(1);*/
+
+    //output stuff
     output = new float[27];
     oIns = new float[output.length];
     oWeights = new float[output.length][hidden.length];
-    /*for (float[] els : oWeights)
-     for (float el : els)
-     el = random(1);
-     for (int i = 0; i < oWeights[0].length; i++)
-     oWeights[0][i] = random(1);*/
 
+    //expected
     expected = new float[output.length];
-    setExpected();
+    setExpected(2);
 
-
-    //roz
-    ar1 = new JSONArray();
-    ar2 = new JSONArray();
-    /*  for (int i = 0; i < hidden.length; i++) {
-     for (int j = 0; j < input.length; j++) {
-     JSONObject ob1 = new JSONObject();
-     ob1.setFloat(w, rand1[i][j]);
-     ar1.setJSONObject(j*4 + i, ob1);
-     }
-     for (int k = 0; k < 27; k++) {
-     JSONObject ob2 = new JSONObject();
-     ob2.setFloat(w, rand2[k][i]);
-     ar2.setJSONObject(i*4 + k, ob2);
-     }
-     }*/
-    //saveJSONArray(ar1, "data/weighth.json");
-    //saveJSONArray(ar2, "data/weighto.json");
+    //set initial weights
+    readFile();
+    for (int i = 0; i < hWeights[0].length; i++)
+      hWeights[0][i] = 0.5;
+    for (int i = 0; i < oWeights[0].length; i++)
+      oWeights[0][i] = 0.5;
   }
 
+  //calls everything and writes into the text files
   void stuff() {
     while (err () > 0.01) {
       hIns = getIn(input, hWeights);
@@ -83,15 +68,18 @@ class Learn {
       output = functionG(oIns);
       println(output);
       println("Error: " + err());
-      if (err() < 1) {
-        alpha -= 0.01;
+      //println("alpha: " + alpha);
+      if (err() < 5) {
+        if (alpha > 0.5)
+          alpha -= 0.01;
       }
       for (int j = 0; j < hidden.length; j++)
         hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       for (int k = 0; k < output.length; k++)
         oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
-      writefile();
+      // println(pls);
     }
+    writeFile();
   }
 
   //takes array of inputs and 2d array of weights, returns array of weighted sums
@@ -122,9 +110,10 @@ class Learn {
 
   //finds error value for each ouput/neuron value (a-z)
   float err(int k) {
-    return expected[k] - output[k]; //abs(output[k] - expected[k]); // XXX not supposed to be abs
+    return expected[k] - output[k];
   }
 
+  //finds total error for all outputs (sum of squares)
   float err() {
     float sum = 0;
     for (int i = 0; i < output.length; i++)
@@ -132,10 +121,12 @@ class Learn {
     return sum;
   }
 
+  //finds the delta value for a neuron k in the output layer
   float deltaOut(int k) {
     return err(k)*gPrime(oIns[k]);
   }
 
+  //finds the delta value for a neuron j in the hidden layer
   float deltaHid(int j) {
     float sum = 0;
     for (int k = 0; k < output.length; k++)
@@ -151,54 +142,119 @@ class Learn {
     return newWeights;
   }
 
-  //set expected result for each input picture (e.g. "a" will have expected [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-  void setExpected() {
+  //set expected result for each input picture (e.g. "a" will have expected [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  void setExpected(int i) {
     for (float el : expected)
       el = 0;
-    expected[2] = 1;
+    expected[i] = 1;
   }
 
-  void writefile() { //puts weights into the file weights.json
-    valuesh = new JSONArray();
-    valueso = new JSONArray();
-
-    for (int i = 0; i < 500; i ++) {
-
-      JSONObject jobh = new JSONObject();
-      JSONObject jobo = new JSONObject();
-
-      for (int j = 0; j < 27; j++) {
-        jobo.setFloat(w, oWeights[j][i]);
-        valueso.setJSONObject(i, jobo);
-      }
-      for (int k = 0; k < 900; k++) {
-        jobh.setFloat(w, hWeights[i][k]);
-        valuesh.setJSONObject(i, jobh);
+  //reads in and sets weights for hidden and output layers from text files
+  void readFile() {
+    BufferedReader br = null;
+    BufferedReader br2 = null;
+    try {
+      br = new BufferedReader(new FileReader("./Documents/Processing/CharacterRecognition/data/hWeights.txt"));
+      br2 = new BufferedReader(new FileReader("./Documents/Processing/CharacterRecognition/data/oWeights.txt"));
+    } 
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+    for (int i = 0; i < hWeights.length; i++) {
+      for (int j = 0; j < hWeights[0].length; j++) {
+        try {
+          hWeights[i][j]=Float.parseFloat(br.readLine());
+        } 
+        catch (Exception e) {
+        }
       }
     }
-    saveJSONArray(valuesh, "data/weighth.json");
-    saveJSONArray(valueso, "data/weighto.json");
-  }
-
-  void readfile() {//puts the weights from file weights.json into hweightss and oweightss
-    inh = loadJSONArray("data/weighth.json");
-    ino = loadJSONArray("data/weighto.json");
-    if (inh != null && ino != null) {
-      hWeightss = new float[500][900];//hi
-      oWeightss = new float[27][500];//oh
-      int ch = 0;
-      int co = 0;
-      for (int i = 0; i < 500; i++) {
-        for (int k = 0; k < 900; k++) {
-          hWeightss[i][k] = inh.getJSONObject(ch).getFloat(w);
-          ch++;
-        }
-        for (int j = 0; j < 27; j++) {
-          oWeightss[j][i] = ino.getJSONObject(co).getFloat(w);
-          co++;
+    for (int i = 0; i < oWeights.length; i++) {
+      for (int j = 0; j < oWeights[0].length; j++) {
+        try {
+          oWeights[i][j]=Float.parseFloat(br2.readLine());
+        } 
+        catch (Exception e) {
         }
       }
     }
   }
+
+  //writes in new weights to the text files after they have been adjusted
+  void writeFile() {
+    PrintWriter pw = null;
+    PrintWriter pw2 = null;
+    try {
+      pw = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/hWeights.txt"));
+      pw2 = new PrintWriter(new FileWriter("./Documents/Processing/CharacterRecognition/data/oWeights.txt"));
+    } 
+    catch (Exception e) { 
+      e.printStackTrace();
+    }
+    for (int i = 0; i < hWeights.length; i++) {
+      for (int j = 0; j < hWeights[0].length; j++) {
+        pw.println(hWeights[i][j]);
+      }
+    }
+    for (int i = 0; i < oWeights.length; i++) {
+      for (int j = 0; j < oWeights[0].length; j++) {
+        pw2.println(oWeights[i][j]);
+      }
+    }
+
+    pw.close();
+    pw2.close();
+    exit();
+  }
+
+
+  //JSON Array stuff
+  /* void writefile() { //puts weights into the file weights.json
+   valuesh = new JSONArray();
+   valueso = new JSONArray();
+   
+   for (int i = 0; i < hidden.length; i ++) {
+   JSONObject jobo = new JSONObject();
+   for (int j = 0; j < output.length; j++) {
+   jobo.setFloat(w, oWeights[j][i]);
+   valueso.setJSONObject(j + i * hidden.length, jobo);
+   }
+   }
+   
+   for (int k = 0; k < input.length; k++) {
+   JSONObject jobh = new JSONObject();
+   for (int i = 0; i < hidden.length; i ++) {
+   jobh.setFloat(w, hWeights[i][k]);
+   valuesh.setJSONObject(k + i * hidden.length, jobh);
+   }
+   }
+   
+   saveJSONArray(valuesh, "data/h.json");
+   saveJSONArray(valueso, "data/o.json");
+   }
+   
+   void readfile() {//puts the weights from file weights.json into hweightss and oweightss
+   inh = loadJSONArray("data/h.json");
+   ino = loadJSONArray("data/o.json");
+   
+   if (inh != null && ino != null) {
+   hWeightss = new float[hidden.length][input.length];//hi
+   oWeightss = new float[output.length][hidden.length];//oh
+   int ch = 0;
+   int co = 0;
+   for (int i = 0; i < hidden.length; i++) {
+   for (int k = 0; k < input.length; k++) {
+   hWeightss[i][k] = inh.getJSONObject(ch).getFloat(w);
+   //println(ch + " " +inh.getJSONObject(ch).getFloat(w));
+   ch++;
+   }
+   for (int j = 0; j < output.length; j++) {
+   oWeightss[j][i] = ino.getJSONObject(co).getFloat(w);
+   co++;
+   }
+   }
+   }
+   pls = true;
+   }*/
 }
 
