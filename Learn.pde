@@ -20,50 +20,47 @@ class Learn {
     //get weights from txt files
     readFile();
 
-    //    while (count < 10000) {
-    //get random 30x30 photo to put through learn
-    //photo = allCharacters.get(round(random(allCharacters.size()-1)));
-    photo = allCharacters.get(0);
-    photo.pi.loadPixels();
-    float[] temp = photo.values;
+    while (count < 10) {
+      //get random 30x30 photo to put through learn
+      photo = allCharacters.get(round(random(allCharacters.size()-1)));
+      //photo = allCharacters.get(0);
+      photo.pi.loadPixels();
+      float[] temp = photo.values;
 
-    input = new float[temp.length + 1];
-    for (int i = 0; i< temp.length; i++)
-      input[i] = temp[i];
+      input = new float[temp.length + 1];
+      for (int i = 0; i< temp.length; i++)
+        input[i] = temp[i];
 
-    input[input.length - 1] = 1; //last input = dummy
+      input[input.length - 1] = 1; //last input = dummy
 
-    // input * hWeights = hIns
-    // hIns --> function G --> hidden
-    // hidden * oWeights = oIns
-    // oIns --> function G --> output
+      // input * hWeights = hIns
+      // hIns --> function G --> hidden
+      // hidden * oWeights = oIns
+      // oIns --> function G --> output
 
-    //hidden stuff
-    hidden = new float[501]; //500 neurons, index 500 is dummy
-    hIns = new float[hidden.length - 1]; 
-    hWeights = new float[hidden.length - 1][input.length];
+      //hidden stuff
+      hidden = new float[501]; //500 neurons, index 500 is dummy
+      hIns = new float[hidden.length - 1]; 
+      hWeights = new float[hidden.length - 1][input.length];
 
-    //output stuff
-    output = new float[27];  // indices 0 - 25 = letters of alphabet, index 26 = " "
-    oIns = new float[output.length];
-    oWeights = new float[output.length][hidden.length];
+      //output stuff
+      output = new float[27];  // indices 0 - 25 = letters of alphabet, index 26 = " "
+      oIns = new float[output.length];
+      oWeights = new float[output.length][hidden.length];
 
-   for (int i = 0; i < hWeights[0].length; i++) 
-      hWeights[0][i] = 1;
-    for (int i = 0; i < oWeights[0].length; i++)
-      oWeights[0][i] = 1;
+      for (int i = 0; i < hWeights[0].length; i++) 
+        hWeights[0][i] = 1;
+      for (int i = 0; i < oWeights[0].length; i++)
+        oWeights[0][i] = 1;
 
-    //expected
-    expected = new float[output.length];
-    if (photo.isSpace) {
-      photo.expect = output.length - 1;
+      //expected
+      expected = new float[output.length];
+      setExpected(photo.expect);
+
+      neuralNet();
+
+      count++;
     }
-    setExpected(photo.expect);
-
-    neuralNet();
-
-    count++;
-    //  }
 
     isDone = true;
     writeFile();
@@ -86,18 +83,21 @@ class Learn {
 
       println(output);
       println("Error: " + err());
-      println(count);
+      println("Count: " + count);
       println("alpha: " + alpha);
       //for (int i= 0; i < hidden.length;i++)
       //  println(i + ": " + hidden[i]);
-        
-     // for (int i= 0; i < input.length;i++)
+
+      // for (int i= 0; i < input.length;i++)
       //  println(i + ": " + input[i]);
 
       if (err() < 2) {
         alpha -= 0.01;
       }
       if (err() > 25 && errCount > 10) {
+        alpha = .25;
+      }
+      if (alpha < -5) {
         alpha = .25;
       }
       if (err() >= temp) {
@@ -111,11 +111,11 @@ class Learn {
       float[][] oTemp = new float[oWeights.length][oWeights[0].length];
 
       for (int j = 0; j < hidden.length - 1; j++) {
-        hTemp[j] = changeWeights(deltaHid(j), hIns, hWeights[j], j);
+        hTemp[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       }
 
       for (int k = 0; k < output.length; k++) {
-        oTemp[k] = changeWeights(deltaOut(k), oIns, oWeights[k], k);
+        oTemp[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
       }
       hWeights = hTemp;
       oWeights = oTemp;
@@ -198,7 +198,7 @@ class Learn {
   }
 
   //changes the weights for 1 neuron
-  float[] changeWeights(float delta, float[] in, float[] weights, int j) {
+  float[] changeWeights(float delta, float[] in, float[] weights) {
     float[] newWeights = new float[weights.length];
     for (int i = 0; i < in.length; i++)
       newWeights[i] = weights[i] + alpha * in[i] * delta;

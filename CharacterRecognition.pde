@@ -26,9 +26,9 @@ void setup() {
   //p = new ProjectiveTransform(photo.pi);
 
   PImage pic;
- // for (int i = 1; i < 27; i++) {
-   // pic = loadImage(i+".png");
-    pic = loadImage("b1.jpg");
+  for (int i = 1; i < 27; i++) {
+    pic = loadImage(i+".png");
+    // pic = loadImage("b1.jpg");
     pic.resize(displayWidth/2, displayWidth*pic.height/pic.width/2);
     photo = new Photo(pic);
     photo.greyscale();
@@ -38,13 +38,13 @@ void setup() {
       chars.get(j).changeSize();
       allCharacters.add(chars.get(j));
       if (allCharacters.get(allCharacters.size()-1).isSpace) {
-        allCharacters.get(allCharacters.size()-1).expect = 27;
-        allCharacters.remove(allCharacters.size()-1);
+        allCharacters.get(allCharacters.size()-1).expect = 26;
+        // allCharacters.remove(allCharacters.size()-1);
       } else {
-        allCharacters.get(allCharacters.size()-1).expect = 1;//i;
+        allCharacters.get(allCharacters.size()-1).expect = i-1;
       }
     }
-  //}
+  }
 
   display(allCharacters);
   println("done1");
