@@ -8,7 +8,7 @@ class Learn {
   float oIns[]; // total input to each output node
   float input[]; //  input to nueral network (input[0] corresponds to special input of 1)
   float expected[]; // expected output
-  float alpha = .25;
+  float alpha = 1;
   int expect;
   Photo photo;
   boolean isDone = false;
@@ -18,7 +18,7 @@ class Learn {
     hWeights = new float[500][901];
     oWeights = new float[27][501];
     //get weights from txt files
-    readFile();
+
 
     while (count < 10) {
       //get random 30x30 photo to put through learn
@@ -48,14 +48,16 @@ class Learn {
       oIns = new float[output.length];
       oWeights = new float[output.length][hidden.length];
 
-      for (int i = 0; i < hWeights[0].length; i++) 
-        hWeights[0][i] = 1;
-      for (int i = 0; i < oWeights[0].length; i++)
-        oWeights[0][i] = 1;
+      /*      for (int i = 0; i < hWeights[0].length; i++) 
+       hWeights[0][i] = .1;
+       for (int i = 0; i < oWeights[0].length; i++)
+       oWeights[0][i] = .1;*/
 
       //expected
       expected = new float[output.length];
       setExpected(photo.expect);
+
+      readFile();
 
       neuralNet();
 
@@ -63,7 +65,6 @@ class Learn {
     }
 
     isDone = true;
-    writeFile();
   }
 
   //calls everything and writes into the text files
@@ -84,21 +85,14 @@ class Learn {
       println(output);
       println("Error: " + err());
       println("Count: " + count);
+      println("expected: " + photo.expect);
       println("alpha: " + alpha);
-      //for (int i= 0; i < hidden.length;i++)
-      //  println(i + ": " + hidden[i]);
-
-      // for (int i= 0; i < input.length;i++)
-      //  println(i + ": " + input[i]);
 
       if (err() < 2) {
         alpha -= 0.01;
       }
-      if (err() > 25 && errCount > 10) {
-        alpha = .25;
-      }
-      if (alpha < -5) {
-        alpha = .25;
+      if ((err() > 25 && errCount > 10) || alpha < -5) {
+        alpha = .75;
       }
       if (err() >= temp) {
         errCount++;
@@ -110,28 +104,24 @@ class Learn {
       float[][] hTemp = new float[hWeights.length][hWeights[0].length];
       float[][] oTemp = new float[oWeights.length][oWeights[0].length];
 
-      for (int j = 0; j < hidden.length - 1; j++) {
+      for (int j = 0; j < hTemp.length; j++) {
         hTemp[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       }
 
-      for (int k = 0; k < output.length; k++) {
+      for (int k = 0; k < oTemp.length; k++) {
         oTemp[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
       }
       hWeights = hTemp;
       oWeights = oTemp;
     }
 
-    //writeFile();
+    writeFile();
   }
 
   //takes array of inputs and 2d array of weights, returns array of weighted sums
   //Params:
   //float in[num-of-inputs + 1], float weights[num-of-outputs][num-of-inputs + 1]
   float[] getIn(float[] in, float[][] weights) {
-    if (weights[0].length != in.length) {
-      println("weights array not correct size");
-      exit();
-    }
     float weightedSums [] = new float[weights.length]; 
     for (int j = 0; j < weights.length; j++) {
       float current = 0;
@@ -187,10 +177,6 @@ class Learn {
 
   //finds the delta value for a neuron j in the hidden layer
   float deltaHid(int j) {
-    if (j == hidden.length - 1) {
-      println("there is no delta for dummy input to output layer");
-      exit();
-    }
     float sum = 0;
     for (int k = 0; k < output.length - 1; k++)
       sum += oWeights[k][j] * deltaOut(k);
@@ -205,7 +191,7 @@ class Learn {
     return newWeights;
   }
 
-  //set expected result for each input picture (e.g. "a" will have expected [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  //set expected result for each input picture (e.g. "a" will have expected [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
   void setExpected(int i) {
     for (int a = 0; a < expected.length; a++)
       expected[a] = 0;
