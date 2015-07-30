@@ -15,10 +15,10 @@ class Learn {
   int count = 0;
 
   Learn() {
-    hWeights = new float[500][901];
-    oWeights = new float[27][501];
-    //get weights from txt files
-
+    // input * hWeights = hIns
+    // hIns --> function G --> hidden
+    // hidden * oWeights = oIns
+    // oIns --> function G --> output
 
     while (count < 10) {
       //get random 30x30 photo to put through learn
@@ -33,20 +33,16 @@ class Learn {
 
       input[input.length - 1] = 1; //last input = dummy
 
-      // input * hWeights = hIns
-      // hIns --> function G --> hidden
-      // hidden * oWeights = oIns
-      // oIns --> function G --> output
-
       //hidden stuff
-      hidden = new float[501]; //500 neurons, index 500 is dummy
-      hIns = new float[hidden.length - 1]; 
       hWeights = new float[hidden.length - 1][input.length];
+      hIns = new float[hidden.length - 1]; 
+      hidden = new float[501]; //500 neurons, index 500 is dummy
 
       //output stuff
-      output = new float[27];  // indices 0 - 25 = letters of alphabet, index 26 = " "
-      oIns = new float[output.length];
       oWeights = new float[output.length][hidden.length];
+      oIns = new float[output.length];
+      output = new float[27];  // indices 0 - 25 = letters of alphabet, index 26 = " "
+
 
       /*      for (int i = 0; i < hWeights[0].length; i++) 
        hWeights[0][i] = .1;
@@ -77,7 +73,7 @@ class Learn {
 
       hIns = getIn(input, hWeights);
       hidden = functionG(hIns, false);
-      hidden[hidden.length - 1] = 1; //update bias value
+      // hidden[hidden.length - 1] = 1; //update bias value
 
       oIns = getIn(hidden, oWeights);
       output = functionG(oIns, true);
@@ -103,11 +99,9 @@ class Learn {
 
       float[][] hTemp = new float[hWeights.length][hWeights[0].length];
       float[][] oTemp = new float[oWeights.length][oWeights[0].length];
-
       for (int j = 0; j < hTemp.length; j++) {
         hTemp[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
       }
-
       for (int k = 0; k < oTemp.length; k++) {
         oTemp[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
       }
