@@ -1,15 +1,5 @@
 class Learn {
 
-  //Roz
-  /*JSONArray valuesh; //to put into the file
-   JSONArray valueso; // to put into the file
-   JSONArray ino; //coming from the file
-   JSONArray inh; //coming from the file
-   String w = "weight";
-   float[][] hWeightss;//weights read in by file indexed by [hidden][input]
-   float[][] oWeightss; //weights read in by file indexed by [output][hidden]*/
-  //boolean pls = false;
-
   float hWeights[][]; // weights indexed by [hidden_node][input]
   float hidden[]; // output of nodes in hidden layer
   float hIns[]; // total input to each hidden node
@@ -18,94 +8,157 @@ class Learn {
   float oIns[]; // total input to each output node
   float input[]; //  input to nueral network (input[0] corresponds to special input of 1)
   float expected[]; // expected output
-  float alpha = 1;
-  int expect = 1;
+  float alpha = .25;
+  int expect;
   Photo photo;
-  
+  boolean isDone = false;
+  int count = 0;
 
-  Learn(PImage img) {
-    photo = new Photo(img);
-    image(photo.pi, 0, 0);
-    photo.changeSize();
-    size(photo.pi.width, photo.pi.height);
-    image(photo.pi, 0, 0);
+  Learn() {
+    hWeights = new float[500][901];
+    oWeights = new float[27][501];
+    //get weights from txt files
+    readFile();
 
-    //make input from pixels of given PImage
+    //    while (count < 10000) {
+    //get random 30x30 photo to put through learn
+    //photo = allCharacters.get(round(random(allCharacters.size()-1)));
+    photo = allCharacters.get(0);
     photo.pi.loadPixels();
-    float[] temp = photo.greyscale();
-    input = new float[temp.length+1];
-    input[0] = 1; //dummy
+    float[] temp = photo.values;
+
+    input = new float[temp.length + 1];
     for (int i = 0; i< temp.length; i++)
-      input[i+1] = temp[i];
+      input[i] = temp[i];
+
+    input[input.length - 1] = 1; //last input = dummy
+
+    // input * hWeights = hIns
+    // hIns --> function G --> hidden
+    // hidden * oWeights = oIns
+    // oIns --> function G --> output
 
     //hidden stuff
-    hidden = new float[501];
-    hIns = new float[hidden.length];
-    hWeights = new float[hidden.length][input.length];
+    hidden = new float[501]; //500 neurons, index 500 is dummy
+    hIns = new float[hidden.length - 1]; 
+    hWeights = new float[hidden.length - 1][input.length];
 
     //output stuff
-    output = new float[27];
+    output = new float[27];  // indices 0 - 25 = letters of alphabet, index 26 = " "
     oIns = new float[output.length];
     oWeights = new float[output.length][hidden.length];
 
+   for (int i = 0; i < hWeights[0].length; i++) 
+      hWeights[0][i] = 1;
+    for (int i = 0; i < oWeights[0].length; i++)
+      oWeights[0][i] = 1;
+
     //expected
     expected = new float[output.length];
-    setExpected(expect);
-
-    //set initial weights
-    //readFile();
-    /*for (float[] els : hWeights)
-     for (float el : els)
-     el = random(1);
-     for (float[] els : oWeights)
-     for (float el : els)
-     el = random(1);*/
-
-    for (int i = 0; i < hWeights[0].length; i++) 
-      hWeights[0][i] = 0.1;
-    for (int i = 0; i < oWeights[0].length; i++)
-      oWeights[0][i] = 0.1;
-  }
-
-  //calls everything and writes into the text files
-  void stuff() {
-    while (err () > .01 && isTeaching) {
-      hIns = getIn(input, hWeights);
-      hidden = functionG(hIns);
-      oIns = getIn(hidden, oWeights);
-      output = functionG(oIns);
-      println(output);
-      println("Error: " + err());
-      println("alpha: " + alpha);
-      if (err() < 2) {
-        alpha -= 0.01;
-      }
-      for (int j = 0; j < hidden.length; j++)
-        hWeights[j] = changeWeights(deltaHid(j), hIns, hWeights[j]);
-      for (int k = 0; k < output.length; k++)
-        oWeights[k] = changeWeights(deltaOut(k), oIns, oWeights[k]);
+    if (photo.isSpace) {
+      photo.expect = output.length - 1;
     }
+    setExpected(photo.expect);
+
+    neuralNet();
+
+    count++;
+    //  }
+
+    isDone = true;
     writeFile();
   }
 
-  //takes array of inputs and 2d array of weights, returns array of weighted sums
-  float[] getIn(float[] in, float[][] weights) {
-    float sums[] = new float[weights.length]; 
-    float sum=0;
-    for (int j = 0; j < weights.length; j++) {
-      for (int i = 0; i < weights[0].length; i++)
-        sum += weights[j][i]*in[i]; 
-      sums[j] = sum; 
-      sum = 0;
+  //calls everything and writes into the text files
+  void neuralNet() {
+
+    float temp = err();
+    int errCount = 0;
+
+    while (err () > .1) {
+
+      hIns = getIn(input, hWeights);
+      hidden = functionG(hIns, false);
+      hidden[hidden.length - 1] = 1; //update bias value
+
+      oIns = getIn(hidden, oWeights);
+      output = functionG(oIns, true);
+
+      println(output);
+      println("Error: " + err());
+      println(count);
+      println("alpha: " + alpha);
+      //for (int i= 0; i < hidden.length;i++)
+      //  println(i + ": " + hidden[i]);
+        
+     // for (int i= 0; i < input.length;i++)
+      //  println(i + ": " + input[i]);
+
+      if (err() < 2) {
+        alpha -= 0.01;
+      }
+      if (err() > 25 && errCount > 10) {
+        alpha = .25;
+      }
+      if (err() >= temp) {
+        errCount++;
+      } else {
+        errCount = 0;
+      }
+      temp = err();
+
+      float[][] hTemp = new float[hWeights.length][hWeights[0].length];
+      float[][] oTemp = new float[oWeights.length][oWeights[0].length];
+
+      for (int j = 0; j < hidden.length - 1; j++) {
+        hTemp[j] = changeWeights(deltaHid(j), hIns, hWeights[j], j);
+      }
+
+      for (int k = 0; k < output.length; k++) {
+        oTemp[k] = changeWeights(deltaOut(k), oIns, oWeights[k], k);
+      }
+      hWeights = hTemp;
+      oWeights = oTemp;
     }
-    return sums;
+
+    //writeFile();
+  }
+
+  //takes array of inputs and 2d array of weights, returns array of weighted sums
+  //Params:
+  //float in[num-of-inputs + 1], float weights[num-of-outputs][num-of-inputs + 1]
+  float[] getIn(float[] in, float[][] weights) {
+    if (weights[0].length != in.length) {
+      println("weights array not correct size");
+      exit();
+    }
+    float weightedSums [] = new float[weights.length]; 
+    for (int j = 0; j < weights.length; j++) {
+      float current = 0;
+      for (int i = 0; i < weights[0].length; i++)
+        current += weights[j][i]*in[i]; 
+      weightedSums[j] = current;
+    }
+    return weightedSums;
   }
 
   //takes array of weighted sums (inputs), puts it through function G
-  float[] functionG(float ins[]) {
-    float out[] = new float[ins.length]; 
-    for (int i = 0; i < out.length; i++)
+  //Param: float ins[num-of-inputs], boolean outputLayer
+  //Returns: float out[num-of-outputs = num-of-inputs + 1]
+  float[] functionG(float ins[], boolean outputLayer) {
+    int extra = 1; //account for dummyNode in hiddenLayer's output
+    if (outputLayer) {
+      extra = 0;
+    }
+
+    float out[] = new float[ins.length + extra];
+
+    for (int i = 0; i < ins.length; i++)
       out[i] = 1/(1+exp(-1*ins[i]));
+
+    if (!outputLayer) {
+      out[out.length - 1] = 1;
+    }
     return out;
   }
 
@@ -123,36 +176,40 @@ class Learn {
   float err() {
     float sum = 0;
     for (int i = 0; i < output.length; i++)
-      sum += err(i) * err(i);
+      sum += abs(err(i));
     return sum;
   }
 
   //finds the delta value for a neuron k in the output layer
   float deltaOut(int k) {
-    return err(k)*gPrime(oIns[k]);
+    return err(k) * gPrime( oIns[k] );
   }
 
   //finds the delta value for a neuron j in the hidden layer
   float deltaHid(int j) {
+    if (j == hidden.length - 1) {
+      println("there is no delta for dummy input to output layer");
+      exit();
+    }
     float sum = 0;
-    for (int k = 0; k < output.length; k++)
+    for (int k = 0; k < output.length - 1; k++)
       sum += oWeights[k][j] * deltaOut(k);
-    return sum * gPrime(hIns[j]);
+    return sum * gPrime( hIns[j] );
   }
 
   //changes the weights for 1 neuron
-  float[] changeWeights(float delta, float[] in, float[] weights) {
+  float[] changeWeights(float delta, float[] in, float[] weights, int j) {
     float[] newWeights = new float[weights.length];
     for (int i = 0; i < in.length; i++)
       newWeights[i] = weights[i] + alpha * in[i] * delta;
     return newWeights;
   }
 
-  //set expected result for each input picture (e.g. "a" will have expected [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+  //set expected result for each input picture (e.g. "a" will have expected [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
   void setExpected(int i) {
-    for (float el : expected)
-      el = 0;
-    expected[i+1] = 1;
+    for (int a = 0; a < expected.length; a++)
+      expected[a] = 0;
+    expected[i] = 1;
   }
 
   //reads in and sets weights for hidden and output layers from text files
@@ -218,57 +275,9 @@ class Learn {
     }
     pw.close();
     pw2.close();
-    exit();
+
+    if (isDone)
+      exit();
   }
-
-
-  //JSON Array stuff
-  /* void writefile() { //puts weights into the file weights.json
-   valuesh = new JSONArray();
-   valueso = new JSONArray();
-   
-   for (int i = 0; i < hidden.length; i ++) {
-   JSONObject jobo = new JSONObject();
-   for (int j = 0; j < output.length; j++) {
-   jobo.setFloat(w, oWeights[j][i]);
-   valueso.setJSONObject(j + i * hidden.length, jobo);
-   }
-   }
-   
-   for (int k = 0; k < input.length; k++) {
-   JSONObject jobh = new JSONObject();
-   for (int i = 0; i < hidden.length; i ++) {
-   jobh.setFloat(w, hWeights[i][k]);
-   valuesh.setJSONObject(k + i * hidden.length, jobh);
-   }
-   }
-   
-   saveJSONArray(valuesh, "data/h.json");
-   saveJSONArray(valueso, "data/o.json");
-   }
-   
-   void readfile() {//puts the weights from file weights.json into hweightss and oweightss
-   inh = loadJSONArray("data/h.json");
-   ino = loadJSONArray("data/o.json");
-   
-   if (inh != null && ino != null) {
-   hWeightss = new float[hidden.length][input.length];//hi
-   oWeightss = new float[output.length][hidden.length];//oh
-   int ch = 0;
-   int co = 0;
-   for (int i = 0; i < hidden.length; i++) {
-   for (int k = 0; k < input.length; k++) {
-   hWeightss[i][k] = inh.getJSONObject(ch).getFloat(w);
-   //println(ch + " " +inh.getJSONObject(ch).getFloat(w));
-   ch++;
-   }
-   for (int j = 0; j < output.length; j++) {
-   oWeightss[j][i] = ino.getJSONObject(co).getFloat(w);
-   co++;
-   }
-   }
-   }
-   pls = true;
-   }*/
 }
 
